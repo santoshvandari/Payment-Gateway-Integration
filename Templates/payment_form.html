@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Payment Form - {{ payment_method|title }}{% endblock %}
 
@@ -11,80 +12,84 @@
             </div>
             <div class="card-body text-center">
                 {% if payment_method == 'esewa' %}
-                <!-- eSewa Demo Payment -->
-                <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <strong>Demo Mode:</strong> This is a simulation for learning purposes. 
-                    <br><small>In production, users would be redirected to real eSewa login page for authentication and payment.</small>
-                </div>
-                
-                <div class="mb-3">
-                    <p><strong>Order ID:</strong> {{ order.order_id }}</p>
-                    <p><strong>Amount:</strong> Rs. {{ order.total_price }}</p>
-                </div>
-                
-                <div class="esewa-demo-container" style="background: linear-gradient(135deg, #60BB46, #22c55e); padding: 2rem; border-radius: 10px; color: white; margin: 1rem 0;">
-                    <h4><i class="fas fa-wallet"></i> eSewa Payment Gateway (Demo)</h4>
-                    <p>In real production, this would redirect to:</p>
-                    <ul class="text-start" style="list-style: none;">
-                        <li>✓ eSewa login page</li>
-                        <li>✓ User authentication</li>
-                        <li>✓ Bank authorization</li>
-                        <li>✓ Real money transfer</li>
-                        <li>✓ Payment verification</li>
-                    </ul>
-                    
-                    <div class="mt-3">
-                        <a href="{% url 'esewa_success' %}?oid={{ order.order_id }}&amt={{ order.total_price }}&refId=DEMO{{ order.order_id }}" 
-                           class="btn btn-light btn-lg me-2">
-                            <i class="fas fa-check"></i> Simulate Successful Payment
-                        </a>
-                        <a href="{% url 'esewa_failure' %}" class="btn btn-outline-light">
-                            <i class="fas fa-times"></i> Simulate Failed Payment
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="alert alert-info">
-                    <small>
-                        <strong>For Production:</strong> Replace demo with actual eSewa merchant credentials and API integration.
-                    </small>
-                </div>
-                
-                <script>
-                // Removed auto-redirect to make it more clear this is manual demo
-                console.log("Demo mode: No auto-redirect. User must manually choose payment outcome.");
-                </script>
-                
+                    {% if gateway_mode == 'sandbox' %}
+                        <!-- eSewa Sandbox/Demo Mode -->
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Sandbox Mode:</strong> This is a test environment. 
+                            <br><small>No real money will be charged.</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <p><strong>Order ID:</strong> {{ order.order_id }}</p>
+                            <p><strong>Amount:</strong> Rs. {{ order.total_price }}</p>
+                        </div>
+                        
+                        <div class="esewa-demo-container" style="background: linear-gradient(135deg, #60BB46, #22c55e); padding: 2rem; border-radius: 10px; color: white; margin: 1rem 0;">
+                            <h4><i class="fas fa-wallet"></i> eSewa Payment Gateway (Sandbox)</h4>
+                            <p>Testing environment - simulate payment outcome:</p>
+                            
+                            <div class="mt-3">
+                                <a href="{% url 'esewa_success' %}?oid={{ order.order_id }}&amt={{ order.total_price }}&refId=TEST{{ order.order_id }}" 
+                                   class="btn btn-light btn-lg me-2">
+                                    <i class="fas fa-check"></i> Simulate Success
+                                </a>
+                                <a href="{% url 'esewa_failure' %}" class="btn btn-outline-light">
+                                    <i class="fas fa-times"></i> Simulate Failure
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- eSewa Production Mode -->
+                        <div class="alert alert-success">
+                            <i class="fas fa-shield-alt"></i>
+                            <strong>Secure Payment:</strong> You will be redirected to eSewa's secure payment page.
+                        </div>
+                        
+                        <form action="{{ payment_url }}" method="POST" id="payment-form">
+                            {% for key, value in payment_data.items %}
+                                <input type="hidden" name="{{ key }}" value="{{ value }}">
+                            {% endfor %}
+                            
+                            <div class="mb-3">
+                                <p><strong>Order ID:</strong> {{ order.order_id }}</p>
+                                <p><strong>Amount:</strong> Rs. {{ order.total_price }}</p>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-credit-card"></i> Continue to eSewa
+                            </button>
+                        </form>
+                        
+                        <script>
+                        // Auto-submit form after 3 seconds in production
+                        setTimeout(function() {
+                            document.getElementById('payment-form').submit();
+                        }, 3000);
+                        </script>
+                    {% endif %}
                 {% else %}
-                <!-- Original payment form for other gateways -->
-                <p class="text-muted">You will be redirected to {{ payment_method|title }} payment gateway...</p>
-                
-                <form action="{{ payment_url }}" method="POST" id="payment-form">
-                    {% for key, value in payment_data.items %}
-                        <input type="hidden" name="{{ key }}" value="{{ value }}">
-                    {% endfor %}
+                    <!-- Other payment methods (Khalti, etc.) -->
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Secure Payment:</strong> You will be redirected to {{ payment_method|title }}'s secure payment page.
+                    </div>
                     
                     <div class="mb-3">
                         <p><strong>Order ID:</strong> {{ order.order_id }}</p>
                         <p><strong>Amount:</strong> Rs. {{ order.total_price }}</p>
                     </div>
                     
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        Continue to {{ payment_method|title }}
-                    </button>
-                </form>
-                
-                <script>
-                // Auto-submit form after 3 seconds
-                setTimeout(function() {
-                    document.getElementById('payment-form').submit();
-                }, 3000);
-                </script>
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Redirecting to {{ payment_method|title }}...</p>
                 {% endif %}
                 
                 <div class="mt-3">
-                    <a href="{% url 'order_checkout' order.id %}" class="btn btn-secondary">Cancel Payment</a>
+                    <a href="{% url 'order_checkout' order.id %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Cancel Payment
+                    </a>
                 </div>
             </div>
         </div>

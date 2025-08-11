@@ -25,9 +25,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-7%umo3=nb0_w#pzin)c#6)qi57uw4%boj5bkkjwdxb4c54o$or'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
 
 
 # Application definition
@@ -127,10 +127,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Payment Gateway Settings
 # eSewa Configuration
-ESEWA_SCD = os.getenv('ESEWA_SCD', 'EPAYTEST')  # Service Code for testing
+ESEWA_SCD = os.getenv('ESEWA_SCD', 'EPAYTEST')  # Use real merchant code in production
 ESEWA_SUCCESS_URL = os.getenv('ESEWA_SUCCESS_URL', 'http://127.0.0.1:8000/payment/esewa-success/')
 ESEWA_FAILURE_URL = os.getenv('ESEWA_FAILURE_URL', 'http://127.0.0.1:8000/payment/esewa-failure/')
-ESEWA_PAYMENT_URL = os.getenv('ESEWA_PAYMENT_URL', 'https://esewa.com.np/epay/main')  # Test URL
+ESEWA_PAYMENT_URL = os.getenv('ESEWA_PAYMENT_URL', 'https://epay.esewa.com.np/api/epay/main/v2/form')  # Production URL
+ESEWA_VERIFY_URL = os.getenv('ESEWA_VERIFY_URL', 'https://epay.esewa.com.np/api/epay/transaction/status/')  # Production verification
+
+# Environment flag
+PAYMENT_GATEWAY_MODE = os.getenv('PAYMENT_GATEWAY_MODE', 'sandbox')  # 'sandbox' or 'production'
 
 # Khalti Configuration
 KHALTI_PUBLIC_KEY = os.getenv('KHALTI_PUBLIC_KEY')  # Test public key
@@ -139,4 +143,46 @@ KHALTI_PAYMENT_URL = os.getenv('KHALTI_PAYMENT_URL')
 KHALTI_VERIFY_URL = os.getenv('KHALTI_VERIFY_URL')
 KHALTI_SUCCESS_URL = os.getenv('KHALTI_SUCCESS_URL')
 KHALTI_FAILURE_URL = os.getenv('KHALTI_FAILURE_URL')
-KHALTI_WEBSITE_URL = os.getenv('KHALTI_WEBSITE_URL')
+KHALTI_WEBSITE_URL = os.getenv('KHALTI_WEBSITE_URL', 'http://127.0.0.1:8000/')
+
+# Production Security Settings
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+# Logging Configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'payment_gateway.log',
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'paymentgateway': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}

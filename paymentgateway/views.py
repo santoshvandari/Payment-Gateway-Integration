@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.utils.decorators import method_decorator
 from django.views import View
+from django.conf import settings
 import json
 from .models import Order, PaymentLog
 from .payment_gateways import EsewaPaymentGateway, KhaltiPaymentGateway
@@ -28,12 +29,16 @@ def order_checkout(request, order_id):
             # Initialize eSewa payment
             esewa = EsewaPaymentGateway()
             payment_data = esewa.generate_payment_data(order)
-            print(payment_data)
+            
+            # Check if we're in sandbox or production mode
+            gateway_mode = getattr(settings, 'PAYMENT_GATEWAY_MODE', 'sandbox')
+            
             context = {
                 'order': order,
                 'payment_data': payment_data,
                 'payment_url': esewa.payment_url,
-                'payment_method': 'esewa'
+                'payment_method': 'esewa',
+                'gateway_mode': gateway_mode
             }
             return render(request, "payment_form.html", context)
             
