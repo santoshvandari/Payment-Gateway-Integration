@@ -110,7 +110,7 @@ class KhaltiPaymentGateway:
         
         payment_data = {
             "return_url": self.success_url,
-            "website_url": "http://127.0.0.1:8000/",
+            "website_url": getattr(settings, 'KHALTI_WEBSITE_URL', 'http://127.0.0.1:8000/'),
             "amount": order.total_price * 100,  # Khalti expects amount in paisa
             "purchase_order_id": order.order_id,
             "purchase_order_name": f"Order - {order.name}",
@@ -130,12 +130,47 @@ class KhaltiPaymentGateway:
             
             if response.status_code == 200:
                 data = response.json()
+                
+                # Log the initiation
+                PaymentLog.objects.create(
+                    order=order,
+                    payment_method='Khalti',
+                    transaction_id=data.get('pidx', ''),
+                    amount=order.total_price,
+                    status='Initiated',
+                    gateway_response=data
+                )
+                
                 return True, data
             else:
-                return False, response.json()
+                error_data = response.json() if response.content else {"error": f"HTTP {response.status_code}"}
+                
+                # Log the failed initiation
+                PaymentLog.objects.create(
+                    order=order,
+                    payment_method='Khalti',
+                    transaction_id='',
+                    amount=order.total_price,
+                    status='Failed',
+                    gateway_response=error_data
+                )
+                
+                return False, error_data
                 
         except Exception as e:
-            return False, {"error": str(e)}
+            error_data = {"error": str(e)}
+            
+            # Log the exception
+            PaymentLog.objects.create(
+                order=order,
+                payment_method='Khalti',
+                transaction_id='',
+                amount=order.total_price,
+                status='Failed',
+                gateway_response=error_data
+            )
+            
+            return False, error_data
     
     def verify_payment(self, pidx):
         """Verify Khalti payment"""

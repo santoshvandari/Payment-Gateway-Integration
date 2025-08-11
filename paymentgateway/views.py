@@ -86,11 +86,51 @@ def esewa_failure(request):
 def khalti_success(request):
     """Handle Khalti payment success callback"""
     pidx = request.GET.get('pidx')
+    transaction_id = request.GET.get('transaction_id')
+    purchase_order_id = request.GET.get('purchase_order_id')
+    amount = request.GET.get('amount')
+    status = request.GET.get('status')
     
     if not pidx:
         messages.error(request, "Invalid payment session")
         return redirect('order_list')
     
+    # If status is already 'Completed' from URL params, we can process directly
+    if status == 'Completed' and purchase_order_id:
+        try:
+            order = Order.objects.get(order_id=purchase_order_id)
+            
+            # Update order status
+            order.is_paid = True
+            order.paid_amount = int(amount) // 100 if amount else order.total_price  # Convert paisa to rupees
+            order.payment_method = 'Khalti'
+            order.transaction_id = transaction_id
+            order.save()
+            
+            # Log payment
+            PaymentLog.objects.create(
+                order=order,
+                payment_method='Khalti',
+                transaction_id=transaction_id,
+                amount=order.paid_amount,
+                status='Success',
+                gateway_response={
+                    'pidx': pidx,
+                    'transaction_id': transaction_id,
+                    'purchase_order_id': purchase_order_id,
+                    'amount': amount,
+                    'status': status
+                }
+            )
+            
+            messages.success(request, "Payment completed successfully!")
+            return redirect('order_success', order_id=order.id)
+            
+        except Order.DoesNotExist:
+            messages.error(request, "Order not found")
+            return redirect('order_list')
+    
+    # Fallback to API verification if needed
     khalti = KhaltiPaymentGateway()
     success, response = khalti.verify_payment(pidx)
     
