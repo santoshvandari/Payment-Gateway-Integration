@@ -421,13 +421,7 @@
                     <i class="fas fa-check-circle"></i>
                 </div>
                 <div class="stats-info">
-                    <h3>
-                        {% with paid_count=0 %}
-                        {% for order in orders %}
-                            {% if order.is_paid %}{{ paid_count|add:1 }}{% endif %}
-                        {% endfor %}
-                        {% endwith %}
-                    </h3>
+                    <h3 id="paid-count">0</h3>
                     <p>Paid Orders</p>
                 </div>
             </div>
@@ -439,13 +433,7 @@
                     <i class="fas fa-clock"></i>
                 </div>
                 <div class="stats-info">
-                    <h3>
-                        {% with pending_count=0 %}
-                        {% for order in orders %}
-                            {% if not order.is_paid %}{{ pending_count|add:1 }}{% endif %}
-                        {% endfor %}
-                        {% endwith %}
-                    </h3>
+                    <h3 id="pending-count">0</h3>
                     <p>Pending Orders</p>
                 </div>
             </div>
@@ -457,13 +445,7 @@
                     <i class="fas fa-money-bill-wave"></i>
                 </div>
                 <div class="stats-info">
-                    <h3>
-                        Rs. {% with total_revenue=0 %}
-                        {% for order in orders %}
-                            {% if order.is_paid %}{{ total_revenue|add:order.total_price }}{% endif %}
-                        {% endfor %}
-                        {% endwith %}
-                    </h3>
+                    <h3 id="total-revenue">Rs. 0</h3>
                     <p>Total Revenue</p>
                 </div>
             </div>
@@ -681,6 +663,72 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // Calculate statistics
+    calculateStatistics();
 });
+
+// Calculate statistics from the table data
+function calculateStatistics() {
+    const table = document.getElementById('ordersTable');
+    if (!table) return;
+    
+    const rows = table.querySelectorAll('tbody tr');
+    let paidCount = 0;
+    let pendingCount = 0;
+    let totalRevenue = 0;
+    
+    rows.forEach(row => {
+        const status = row.dataset.orderStatus;
+        const amountText = row.querySelector('.amount-display').textContent;
+        const amount = parseFloat(amountText.replace('Rs. ', '').replace(',', ''));
+        
+        if (status === 'paid') {
+            paidCount++;
+            totalRevenue += amount;
+        } else if (status === 'pending') {
+            pendingCount++;
+        }
+    });
+    
+    // Update the statistics display with animation
+    animateCounter('paid-count', paidCount);
+    animateCounter('pending-count', pendingCount);
+    animateRevenue('total-revenue', totalRevenue);
+}
+
+// Animate counter numbers
+function animateCounter(elementId, targetValue) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    let currentValue = 0;
+    const increment = targetValue / 20;
+    const timer = setInterval(() => {
+        currentValue += increment;
+        if (currentValue >= targetValue) {
+            currentValue = targetValue;
+            clearInterval(timer);
+        }
+        element.textContent = Math.floor(currentValue);
+    }, 50);
+}
+
+// Animate revenue with currency formatting
+function animateRevenue(elementId, targetValue) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    let currentValue = 0;
+    const increment = targetValue / 20;
+    const timer = setInterval(() => {
+        currentValue += increment;
+        if (currentValue >= targetValue) {
+            currentValue = targetValue;
+            clearInterval(timer);
+        }
+        element.textContent = 'Rs. ' + Math.floor(currentValue).toLocaleString();
+    }, 50);
+}
 </script>
 {% endblock content %}
