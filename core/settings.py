@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'paymentgateway',
 ]
 
 MIDDLEWARE = [
@@ -121,3 +122,18 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Payment Gateway Settings
+# eSewa Configuration
+ESEWA_SCD = 'EPAYTEST'  # Service Code for testing
+ESEWA_SUCCESS_URL = 'http://127.0.0.1:8000/payment/esewa-success/'
+ESEWA_FAILURE_URL = 'http://127.0.0.1:8000/payment/esewa-failure/'
+ESEWA_PAYMENT_URL = 'https://uat.esewa.com.np/epay/main'  # Test URL
+
+# Khalti Configuration
+KHALTI_PUBLIC_KEY = 'test_public_key_dc74e0fd57cb46cd93832aee0a390234'  # Test public key. Change this in production
+KHALTI_SECRET_KEY = 'test_secret_key_f59e8b7d18b4499ca40f68195a846e9b'  # Test secret key. Change this in production
+KHALTI_PAYMENT_URL = 'https://a.khalti.com/api/v2/epayment/initiate/'
+KHALTI_VERIFY_URL = 'https://a.khalti.com/api/v2/epayment/lookup/'
+KHALTI_SUCCESS_URL = 'http://127.0.0.1:8000/payment/khalti-success/'
+KHALTI_FAILURE_URL = 'http://127.0.0.1:8000/payment/khalti-failure/'

@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Test Order{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Create Test Order</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4">Create a test order to demonstrate payment gateway integration.</p>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Customer Name</label>
+                        <input type="text" class="form-control" id="name" name="name" 
+                               placeholder="Enter customer name" value="John Doe" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Amount (Rs.)</label>
+                        <input type="number" class="form-control" id="amount" name="amount" 
+                               placeholder="Enter amount" value="1000" min="1" required>
+                        <div class="form-text">Minimum amount is Rs. 1</div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <strong>Note:</strong> This will create a test order that you can use to test both Khalti and eSewa payment gateways.
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">Create Order</button>
+                        <a href="{% url 'order_list' %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Sample Test Data -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">Sample Test Data</h6>
+            </div>
+            <div class="card-body">
+                <h6>eSewa Test Credentials:</h6>
+                <ul class="list-unstyled">
+                    <li><strong>Service Code:</strong> EPAYTEST</li>
+                    <li><strong>Environment:</strong> UAT (User Acceptance Testing)</li>
+                    <li><strong>Test URL:</strong> https://uat.esewa.com.np/epay/main</li>
+                </ul>
+                
+                <h6 class="mt-3">Khalti Test Credentials:</h6>
+                <ul class="list-unstyled">
+                    <li><strong>Test Public Key:</strong> test_public_key_dc74e0fd57cb46cd93832aee0a390234</li>
+                    <li><strong>Test Secret Key:</strong> test_secret_key_f59e8b7d18b4499ca40f68195a846e9b</li>
+                    <li><strong>Environment:</strong> Sandbox</li>
+                </ul>
+                
+                <div class="alert alert-warning mt-3">
+                    <small><strong>Important:</strong> These are test credentials for demonstration purposes only. In production, use your actual merchant credentials.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

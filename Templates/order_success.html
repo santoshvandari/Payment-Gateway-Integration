@@ -1,12 +1,117 @@
-{% extends 'payment/base.html' %}
+{% extends 'base.html' %}
+
+{% block title %}Payment Success - Order {{ order.order_id }}{% endblock %}
 
 {% block content %}
-<h2 class='mt-4'>Order Success</h2>
-<div class="card">
-    <div class="card-body">
-        <p>Name : {{order.name}}</p>
-        <p>Price : {{order.total_price}}</p>
-        <p>Paid: {{order.is_paid}}</p>
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body text-center">
+                <!-- Success Icon -->
+                <div class="text-success mb-4">
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                </div>
+                
+                <h2 class="text-success mb-4">Payment Successful!</h2>
+                <p class="lead text-muted mb-4">Thank you for your payment. Your order has been processed successfully.</p>
+                
+                <!-- Order Details -->
+                <div class="card bg-light mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Order Receipt</h5>
+                        <div class="row text-start">
+                            <div class="col-md-6">
+                                <p><strong>Order ID:</strong><br>{{ order.order_id }}</p>
+                                <p><strong>Customer Name:</strong><br>{{ order.name }}</p>
+                                <p><strong>Order Date:</strong><br>{{ order.created_at|date:"F d, Y g:i A" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Amount Paid:</strong><br>Rs. {{ order.paid_amount|default:order.total_price }}</p>
+                                <p><strong>Payment Method:</strong><br>
+                                    <span class="badge bg-info">{{ order.payment_method|default:"Not specified" }}</span>
+                                </p>
+                                <p><strong>Transaction ID:</strong><br>
+                                    <small class="text-muted">{{ order.transaction_id|default:"N/A" }}</small>
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="border-top pt-3 mt-3">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <strong>Payment Status:</strong>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    {% if order.is_paid %}
+                                        <span class="badge bg-success fs-6">PAID</span>
+                                    {% else %}
+                                        <span class="badge bg-warning fs-6">PENDING</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <a href="{% url 'order_list' %}" class="btn btn-primary me-md-2">
+                        <i class="fas fa-list"></i> View All Orders
+                    </a>
+                    <a href="{% url 'create_test_order' %}" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Create New Order
+                    </a>
+                </div>
+                
+                <!-- Additional Information -->
+                <div class="alert alert-info mt-4">
+                    <strong>Important:</strong> Please save this receipt for your records. If you have any questions about this transaction, please contact our support team with the order ID.
+                </div>
+            </div>
+        </div>
+        
+        {% if order.payment_logs.all %}
+        <!-- Payment Logs (for debugging/admin purposes) -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">Payment Logs</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Method</th>
+                                <th>Status</th>
+                                <th>Amount</th>
+                                <th>Transaction ID</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in order.payment_logs.all %}
+                            <tr>
+                                <td><small>{{ log.created_at|date:"M d, Y H:i" }}</small></td>
+                                <td><span class="badge bg-secondary">{{ log.payment_method }}</span></td>
+                                <td>
+                                    {% if log.status == 'Success' %}
+                                        <span class="badge bg-success">{{ log.status }}</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">{{ log.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>Rs. {{ log.amount }}</td>
+                                <td><small>{{ log.transaction_id }}</small></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock content %}

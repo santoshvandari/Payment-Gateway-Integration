@@ -1,29 +1,91 @@
-{% extends 'payment/base.html' %}
+{% extends 'base.html' %}
+
+{% block title %}Orders List - Payment Gateway{% endblock %}
 
 {% block content %}
-<h3>Orders List</h3>
-<table class="table table-striped">
-    <thead>
-      <tr>
-        <th scope="col">#</th>
-        <th scope="col">Name</th>
-        <th scope="col">Paid</th>
-        <th scope="col">Paid Amount</th>
-        <th scope="col">Action</th>
-      </tr>
-    </thead>
-    <tbody>
-        {% for order in orders %}
-        <tr>
-            <th scope="row">{{order.id}}</th>
-            <td>{{order.name}}</td>
-            <td>{{order.is_paid}}</td>
-            <td>{{order.paid_amount}}</td>
-            <td><a href="{% url 'order_checkout' order.id %}"><button class="btn btn-primary">Check Out</button></a></td>
-        </tr>
-        {% endfor %}
-  
-    </tbody>
-  </table>
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Orders List</h2>
+            <a href="{% url 'create_test_order' %}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Create Test Order
+            </a>
+        </div>
 
+        <div class="card">
+            <div class="card-body">
+                {% if orders %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Order ID</th>
+                                    <th scope="col">Customer Name</th>
+                                    <th scope="col">Amount (Rs.)</th>
+                                    <th scope="col">Payment Status</th>
+                                    <th scope="col">Payment Method</th>
+                                    <th scope="col">Transaction ID</th>
+                                    <th scope="col">Created At</th>
+                                    <th scope="col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in orders %}
+                                <tr>
+                                    <th scope="row">{{ forloop.counter }}</th>
+                                    <td><strong>{{ order.order_id }}</strong></td>
+                                    <td>{{ order.name }}</td>
+                                    <td>Rs. {{ order.total_price }}</td>
+                                    <td>
+                                        {% if order.is_paid %}
+                                            <span class="badge bg-success">Paid</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if order.payment_method %}
+                                            <span class="badge bg-info">{{ order.payment_method }}</span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if order.transaction_id %}
+                                            <small class="text-muted">{{ order.transaction_id|truncatechars:15 }}</small>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ order.created_at|date:"M d, Y H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        {% if not order.is_paid %}
+                                            <a href="{% url 'order_checkout' order.id %}" class="btn btn-primary btn-sm">
+                                                Pay Now
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url 'order_success' order.id %}" class="btn btn-success btn-sm">
+                                                View Receipt
+                                            </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <h4 class="text-muted">No orders found</h4>
+                        <p class="text-muted">Create a test order to get started with payment integration.</p>
+                        <a href="{% url 'create_test_order' %}" class="btn btn-primary">Create Test Order</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock content %}
