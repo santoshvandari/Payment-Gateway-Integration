@@ -1,0 +1,20 @@
+html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Payment Gateway{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'static/favicon.ico' %}">
+    <link rel="stylesheet" href="{% static 'static/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'static/css/styles.css' %}">
+</head>
+<body>
+    <div class="container">
+        {% block content %}
+        <h1>Welcome to the Payment Gateway</h1>
+        {% endblock %}
+    </div>
+    <script src="{% static 'static/js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>
