@@ -5,50 +5,422 @@
 
 {% block extra_css %}
 <style>
-    .payment-gateway-card {
+    .checkout-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 0;
+    }
+
+    .payment-method-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border: 2px solid transparent;
+        border-radius: 24px;
+        padding: 2.5rem;
+        margin: 1.5rem 0;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         position: relative;
         overflow: hidden;
     }
-    .payment-gateway-card::before {
+
+    .payment-method-card::before {
         content: '';
         position: absolute;
         top: 0;
         left: -100%;
         width: 100%;
         height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-        transition: left 0.5s;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.6s;
     }
-    .payment-gateway-card:hover::before {
+
+    .payment-method-card:hover::before {
         left: 100%;
     }
-    .khalti-gradient {
-        background: linear-gradient(135deg, #5D2E5D, #7c3aed);
+
+    .payment-method-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
     }
-    .esewa-gradient {
-        background: linear-gradient(135deg, #60BB46, #22c55e);
+
+    .payment-method-card.selected {
+        border-color: #fff;
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
     }
-    .order-summary {
-        background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(99, 102, 241, 0.1));
-        border-left: 4px solid var(--primary-color);
+
+    .khalti-card {
+        background: linear-gradient(135deg, rgba(93, 46, 93, 0.9), rgba(124, 58, 237, 0.9));
+    }
+
+    .khalti-card:hover, .khalti-card.selected {
+        background: linear-gradient(135deg, rgba(93, 46, 93, 1), rgba(124, 58, 237, 1));
+    }
+
+    .esewa-card {
+        background: linear-gradient(135deg, rgba(96, 187, 70, 0.9), rgba(34, 197, 94, 0.9));
+    }
+
+    .esewa-card:hover, .esewa-card.selected {
+        background: linear-gradient(135deg, rgba(96, 187, 70, 1), rgba(34, 197, 94, 1));
+    }
+
+    .payment-icon {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        color: white;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .order-summary-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 2.5rem;
+        position: sticky;
+        top: 120px;
+    }
+
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    .summary-item:last-child {
+        border-bottom: none;
+        font-weight: 600;
+        font-size: 1.2rem;
+        color: #fff;
+    }
+
+    .btn-checkout {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border: none;
+        border-radius: 15px;
+        padding: 1rem 2.5rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: white;
+        width: 100%;
+        margin-top: 2rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-checkout:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-checkout:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .pulse-animation {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    .feature-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .payment-features {
+        margin-top: 1.5rem;
+    }
+
+    .payment-features ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .payment-features li {
+        color: rgba(255, 255, 255, 0.9);
+        margin: 0.5rem 0;
+        font-size: 0.9rem;
+    }
+
+    .payment-features li::before {
+        content: '✓';
+        color: #fff;
+        font-weight: bold;
+        margin-right: 0.5rem;
+    }
+
+    .order-steps {
+        display: flex;
+        justify-content: center;
+        margin: 2rem 0;
+    }
+
+    .step {
+        display: flex;
+        align-items: center;
+        color: rgba(255, 255, 255, 0.6);
+        font-weight: 500;
+    }
+
+    .step.active {
+        color: white;
+    }
+
+    .step-number {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .step.active .step-number {
+        background: white;
+        color: #667eea;
+    }
+
+    .step-connector {
+        width: 50px;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.2);
+        margin: 0 1rem;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-xl-10">
-        <!-- Page Header -->
-        <div class="text-center mb-5" data-aos="fade-down">
-            <h1 class="display-6 fw-bold text-dark">
-                <i class="fas fa-shopping-cart me-3 text-primary"></i>Secure Checkout
-            </h1>
-            <p class="lead text-muted">Complete your payment using Nepal's trusted payment gateways</p>
+<div class="checkout-container">
+    <!-- Order Steps -->
+    <div class="order-steps" data-aos="fade-down">
+        <div class="step active">
+            <div class="step-number">1</div>
+            <span>Review Order</span>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step active">
+            <div class="step-number">2</div>
+            <span>Choose Payment</span>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <span>Complete Payment</span>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Payment Methods -->
+        <div class="col-lg-8">
+            <div class="card glass" data-aos="fade-right">
+                <div class="card-body p-4">
+                    <h3 class="card-title text-white mb-4">
+                        <i class="fas fa-credit-card me-2"></i>
+                        Choose Payment Method
+                    </h3>
+                    
+                    <form method="post" id="payment-form">
+                        {% csrf_token %}
+                        
+                        <!-- Khalti Payment Option -->
+                        <div class="payment-method-card khalti-card" data-aos="fade-up" data-aos-delay="100" onclick="selectPayment('khalti')">
+                            <div class="feature-badge">Most Popular</div>
+                            <input type="radio" name="payment_method" value="khalti" id="khalti" style="display: none;">
+                            <div class="text-center">
+                                <div class="payment-icon">
+                                    <i class="fas fa-mobile-alt"></i>
+                                </div>
+                                <h4 class="text-white mb-3">Khalti Digital Wallet</h4>
+                                <p class="text-white-50 mb-0">Pay securely with your Khalti digital wallet</p>
+                                
+                                <div class="payment-features">
+                                    <ul>
+                                        <li>Instant payment processing</li>
+                                        <li>Bank account & mobile banking</li>
+                                        <li>24/7 customer support</li>
+                                        <li>Secure & encrypted transactions</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- eSewa Payment Option -->
+                        <div class="payment-method-card esewa-card" data-aos="fade-up" data-aos-delay="200" onclick="selectPayment('esewa')">
+                            <input type="radio" name="payment_method" value="esewa" id="esewa" style="display: none;">
+                            <div class="text-center">
+                                <div class="payment-icon">
+                                    <i class="fas fa-wallet"></i>
+                                </div>
+                                <h4 class="text-white mb-3">eSewa Digital Payment</h4>
+                                <p class="text-white-50 mb-0">Nepal's leading digital payment platform</p>
+                                
+                                <div class="payment-features">
+                                    <ul>
+                                        <li>Widely accepted payment method</li>
+                                        <li>Bank transfer & online banking</li>
+                                        <li>Quick & reliable processing</li>
+                                        <li>Government approved platform</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-checkout" id="checkout-btn" disabled>
+                            <i class="fas fa-lock me-2"></i>
+                            Proceed to Secure Payment
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
 
-        <div class="row">
-            <!-- Order Summary -->
-            <div class="col-lg-5 mb-4">
+        <!-- Order Summary -->
+        <div class="col-lg-4">
+            <div class="order-summary-card" data-aos="fade-left">
+                <h4 class="text-white mb-4">
+                    <i class="fas fa-receipt me-2"></i>
+                    Order Summary
+                </h4>
+                
+                <div class="summary-item">
+                    <span>Order ID:</span>
+                    <span class="fw-bold">{{ order.order_id }}</span>
+                </div>
+                
+                <div class="summary-item">
+                    <span>Customer:</span>
+                    <span>{{ order.name }}</span>
+                </div>
+                
+                <div class="summary-item">
+                    <span>Subtotal:</span>
+                    <span>Rs. {{ order.total_price }}</span>
+                </div>
+                
+                <div class="summary-item">
+                    <span>Processing Fee:</span>
+                    <span>Rs. 0</span>
+                </div>
+                
+                <div class="summary-item">
+                    <span><strong>Total Amount:</strong></span>
+                    <span class="text-warning"><strong>Rs. {{ order.total_price }}</strong></span>
+                </div>
+
+                <!-- Security Features -->
+                <div class="mt-4 pt-3" style="border-top: 1px solid rgba(255,255,255,0.1);">
+                    <h6 class="text-white mb-3">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Security Features
+                    </h6>
+                    <div class="d-flex justify-content-between text-white-50 small">
+                        <span><i class="fas fa-lock me-1"></i>SSL Encrypted</span>
+                        <span><i class="fas fa-check-circle me-1"></i>PCI Compliant</span>
+                        <span><i class="fas fa-user-shield me-1"></i>Privacy Protected</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="text-center mt-4" data-aos="fade-up">
+        <a href="{% url 'order_list' %}" class="btn btn-outline-light btn-lg">
+            <i class="fas fa-arrow-left me-2"></i>
+            Back to Orders
+        </a>
+    </div>
+</div>
+
+<script>
+let selectedPayment = null;
+
+function selectPayment(method) {
+    // Remove previous selections
+    document.querySelectorAll('.payment-method-card').forEach(card => {
+        card.classList.remove('selected', 'pulse-animation');
+    });
+    
+    // Add selection to clicked card
+    const selectedCard = document.querySelector(`.${method}-card`);
+    selectedCard.classList.add('selected', 'pulse-animation');
+    
+    // Update radio button
+    document.getElementById(method).checked = true;
+    selectedPayment = method;
+    
+    // Enable checkout button
+    const checkoutBtn = document.getElementById('checkout-btn');
+    checkoutBtn.disabled = false;
+    checkoutBtn.innerHTML = `<i class="fas fa-lock me-2"></i>Proceed with ${method === 'khalti' ? 'Khalti' : 'eSewa'}`;
+    
+    // Add some visual feedback
+    setTimeout(() => {
+        selectedCard.classList.remove('pulse-animation');
+    }, 2000);
+}
+
+// Form submission handling
+document.getElementById('payment-form').addEventListener('submit', function(e) {
+    if (!selectedPayment) {
+        e.preventDefault();
+        alert('Please select a payment method');
+        return;
+    }
+    
+    const submitBtn = document.getElementById('checkout-btn');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Redirecting to Payment Gateway...';
+    submitBtn.disabled = true;
+});
+
+// Add loading states and animations
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate payment cards on hover
+    document.querySelectorAll('.payment-method-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px) scale(1.02)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            if (!this.classList.contains('selected')) {
+                this.style.transform = 'translateY(0) scale(1)';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Update progress bar
+document.querySelector('.payment-progress').style.width = '66%';
+</script>
+{% endblock %}
                 <div class="card order-summary" data-aos="fade-right">
                     <div class="card-header bg-transparent border-0 pb-0">
                         <h4 class="fw-bold mb-0">

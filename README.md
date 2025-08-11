@@ -1,39 +1,13 @@
-# 💳 Payment Gateway Integration - Django
+# Payment Gateway Integration - Django
 
 A production-ready Django application demonstrating comprehensive payment gateway integration with **eSewa** and **Khalti** - Nepal's leading digital payment platforms.
 
 ![Django](https://img.shields.io/badge/Django-5.2.5-green.svg)
 ![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)
 
-## 🚀 Features
 
-### 💰 Payment Gateway Support
-- **eSewa Integration** - Complete API integration with sandbox/production modes
-- **Khalti Integration** - Full implementation with webhook support
-- **Dual Mode Operation** - Seamless switching between sandbox and production
-- **Real-time Verification** - Server-side payment verification
-
-### 🛡️ Security & Compliance
-- **Production Security** - HTTPS enforcement, security headers, XSS protection
-- **API Key Management** - Secure credential handling with environment variables
-- **Payment Verification** - Double verification with gateway APIs
-- **Audit Trail** - Complete transaction logging and monitoring
-
-### 🎨 Modern UI/UX
-- **Responsive Design** - Mobile-first approach with Bootstrap 5
-- **Glassmorphism Effects** - Modern glass-like UI components
-- **Interactive Animations** - AOS library for smooth animations
-- **Payment Flow** - Intuitive checkout process
-
-### 📊 Advanced Features
-- **Order Management** - Complete order lifecycle tracking
-- **Payment Analytics** - Transaction monitoring and reporting
-- **Error Handling** - Comprehensive error logging and recovery
-- **Status Management** - Real-time order status updates
-
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Technology | Purpose | Version |
 |------------|---------|---------|
@@ -45,7 +19,7 @@ A production-ready Django application demonstrating comprehensive payment gatewa
 | **Font Awesome** | Icons | 6.0+ |
 | **AOS** | Animations | 2.3+ |
 
-## 📋 Prerequisites
+## Prerequisites
 
 - Python 3.8 or higher
 - Django 5.2.5
@@ -101,7 +75,7 @@ python manage.py runserver
 
 Visit `http://127.0.0.1:8000` to see the application.
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables
 
@@ -130,7 +104,7 @@ KHALTI_FAILURE_URL=http://127.0.0.1:8000/payment/khalti-failure/
 KHALTI_WEBSITE_URL=http://127.0.0.1:8000/
 ```
 
-## 📖 Usage
+## Usage
 
 ### Creating Orders
 1. Navigate to `/payment/create-test-order/`
@@ -148,7 +122,7 @@ KHALTI_WEBSITE_URL=http://127.0.0.1:8000/
 - View orders, payment logs, and analytics
 - Monitor transaction status and details
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 Payment-Gateway-Integration/
@@ -178,7 +152,7 @@ Payment-Gateway-Integration/
 └── README.md                    # This file
 ```
 
-## 💳 Payment Gateway Integration
+## Payment Gateway Integration
 
 ### eSewa Integration
 
@@ -204,20 +178,7 @@ Payment-Gateway-Integration/
 - Complete KYC verification
 - Get live API credentials
 
-## 🔍 API Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/payment/` | GET | Order list |
-| `/payment/order-checkout/<id>/` | GET/POST | Order checkout |
-| `/payment/order-success/<id>/` | GET | Order success page |
-| `/payment/esewa-success/` | GET | eSewa callback |
-| `/payment/esewa-failure/` | GET | eSewa failure |
-| `/payment/khalti-success/` | GET | Khalti callback |
-| `/payment/khalti-failure/` | GET | Khalti failure |
-| `/payment/create-test-order/` | GET/POST | Create test order |
-
-## 🧪 Testing
+## Testing
 
 ### Sandbox Testing
 ```bash
@@ -228,15 +189,7 @@ PAYMENT_GATEWAY_MODE=sandbox
 python manage.py test
 ```
 
-### Manual Testing Checklist
-- [ ] Order creation flow
-- [ ] eSewa payment simulation
-- [ ] Khalti payment integration
-- [ ] Success/failure callbacks
-- [ ] Database logging
-- [ ] Admin panel functionality
-
-## 🚀 Production Deployment
+## Production Deployment
 
 For production deployment, follow the detailed guide in [PRODUCTION_DEPLOYMENT.md](PRODUCTION_DEPLOYMENT.md).
 
@@ -248,7 +201,7 @@ For production deployment, follow the detailed guide in [PRODUCTION_DEPLOYMENT.m
 5. Enable HTTPS
 6. Monitor transactions
 
-## 📊 Database Schema
+## Database Schema
 
 ### Order Model
 ```python
@@ -276,31 +229,7 @@ For production deployment, follow the detailed guide in [PRODUCTION_DEPLOYMENT.m
 - user_agent: Browser information
 ```
 
-## 🛡️ Security Features
-
-- **CSRF Protection**: Django built-in CSRF middleware
-- **SQL Injection Protection**: Django ORM prevents SQL injection
-- **XSS Protection**: Template auto-escaping and security headers
-- **HTTPS Enforcement**: SSL redirect in production
-- **Secure Headers**: XSS filter, content type sniffing protection
-- **API Key Security**: Environment variable storage
-- **Input Validation**: Server-side validation for all inputs
-
-## 📈 Monitoring & Analytics
-
-### Payment Analytics
-- Transaction success rates
-- Payment method preferences
-- Revenue tracking
-- Failed transaction analysis
-
-### Logging
-- All payment attempts logged
-- Error tracking and debugging
-- Gateway response monitoring
-- Performance metrics
-
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create feature branch (`git checkout -b feature/amazing-feature`)
@@ -308,53 +237,7 @@ For production deployment, follow the detailed guide in [PRODUCTION_DEPLOYMENT.m
 4. Push to branch (`git push origin feature/amazing-feature`)
 5. Open Pull Request
 
-### Development Guidelines
-- Follow PEP 8 style guide
-- Add tests for new features
-- Update documentation
-- Ensure security best practices
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **eSewa** - Digital payment platform
-- **Khalti** - Digital wallet service
-- **Django** - Web framework
-- **Bootstrap** - Frontend framework
-- **Font Awesome** - Icon library
-
-## 📞 Support
-
-### Getting Help
-- Check [Issues](https://github.com/santoshvandari/Payment-Gateway-Integration/issues) for common problems
-- Read [PRODUCTION_DEPLOYMENT.md](PRODUCTION_DEPLOYMENT.md) for deployment help
-- Contact payment gateway support for API issues
-
-### Payment Gateway Support
-- **eSewa**: merchant@esewa.com.np
-- **Khalti**: merchant@khalti.com
-
-## 🔄 Version History
-
-- **v2.0.0** - Production-ready version with enhanced security
-- **v1.0.0** - Initial demo implementation
-
-## 🎯 Future Enhancements
-
-- [ ] Additional payment gateways (IME Pay, ConnectIPS)
-- [ ] Mobile app integration
-- [ ] Advanced analytics dashboard
-- [ ] Automated testing suite
-- [ ] Docker containerization
-- [ ] Kubernetes deployment
-- [ ] Real-time notifications
-- [ ] Multi-currency support
-
----
-
-**Built with ❤️ for learning and production use**
-
-**Star ⭐ this repository if it helped you!**

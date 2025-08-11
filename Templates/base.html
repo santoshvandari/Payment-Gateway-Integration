@@ -31,7 +31,7 @@
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
             <a class="navbar-brand" href="{% url 'order_list' %}">
-                <i class="fas fa-credit-card me-2"></i>PaymentGW
+                <i class="fas fa-credit-card me-2"></i>PayGateway Pro
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -43,6 +43,9 @@
                     </a>
                     <a class="nav-link" href="{% url 'create_test_order' %}">
                         <i class="fas fa-plus me-1"></i>Create Order
+                    </a>
+                    <a class="nav-link" href="/admin/">
+                        <i class="fas fa-cog me-1"></i>Admin
                     </a>
                 </div>
             </div>

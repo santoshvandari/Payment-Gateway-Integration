@@ -2,116 +2,405 @@
 
 {% block title %}Payment Success - Order {{ order.order_id }}{% endblock %}
 
+{% block extra_css %}
+<style>
+    .success-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem 0;
+    }
+
+    .success-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 3rem;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .success-icon {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 2rem;
+        animation: successPulse 2s infinite;
+        box-shadow: 0 20px 40px rgba(16, 185, 129, 0.3);
+    }
+
+    .success-icon i {
+        font-size: 3rem;
+        color: white;
+    }
+
+    @keyframes successPulse {
+        0% { transform: scale(1); box-shadow: 0 20px 40px rgba(16, 185, 129, 0.3); }
+        50% { transform: scale(1.05); box-shadow: 0 25px 50px rgba(16, 185, 129, 0.4); }
+        100% { transform: scale(1); box-shadow: 0 20px 40px rgba(16, 185, 129, 0.3); }
+    }
+
+    .receipt-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 2.5rem;
+        margin: 2rem 0;
+    }
+
+    .receipt-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    .receipt-item:last-child {
+        border-bottom: none;
+    }
+
+    .receipt-label {
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .receipt-value {
+        font-weight: 600;
+        color: white;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin: 2rem 0;
+    }
+
+    .btn-action {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border: none;
+        border-radius: 15px;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        color: white;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .btn-action.secondary {
+        background: linear-gradient(135deg, #64748b, #475569);
+    }
+
+    .btn-action.secondary:hover {
+        box-shadow: 0 15px 30px rgba(100, 116, 139, 0.4);
+    }
+
+    .status-badge {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 1rem;
+        display: inline-block;
+        margin: 1rem 0;
+    }
+
+    .payment-logs-card {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 2rem;
+        margin-top: 2rem;
+    }
+
+    .logs-table {
+        background: transparent;
+        color: white;
+    }
+
+    .logs-table th {
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.9);
+        border: none;
+        padding: 1rem;
+    }
+
+    .logs-table td {
+        border-color: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.8);
+        padding: 1rem;
+    }
+
+    .confetti {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1000;
+    }
+
+    .floating-elements {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+
+    .floating-element {
+        position: absolute;
+        opacity: 0.1;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(180deg); }
+    }
+
+    .info-alert {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 15px;
+        padding: 1.5rem;
+        color: rgba(255, 255, 255, 0.9);
+        margin-top: 2rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-body text-center">
-                <!-- Success Icon -->
-                <div class="text-success mb-4">
-                    <svg width="80" height="80" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                    </svg>
-                </div>
-                
-                <h2 class="text-success mb-4">Payment Successful!</h2>
-                <p class="lead text-muted mb-4">Thank you for your payment. Your order has been processed successfully.</p>
-                
-                <!-- Order Details -->
-                <div class="card bg-light mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title mb-3">Order Receipt</h5>
-                        <div class="row text-start">
-                            <div class="col-md-6">
-                                <p><strong>Order ID:</strong><br>{{ order.order_id }}</p>
-                                <p><strong>Customer Name:</strong><br>{{ order.name }}</p>
-                                <p><strong>Order Date:</strong><br>{{ order.created_at|date:"F d, Y g:i A" }}</p>
-                            </div>
-                            <div class="col-md-6">
-                                <p><strong>Amount Paid:</strong><br>Rs. {{ order.paid_amount|default:order.total_price }}</p>
-                                <p><strong>Payment Method:</strong><br>
-                                    <span class="badge bg-info">{{ order.payment_method|default:"Not specified" }}</span>
-                                </p>
-                                <p><strong>Transaction ID:</strong><br>
-                                    <small class="text-muted">{{ order.transaction_id|default:"N/A" }}</small>
-                                </p>
-                            </div>
-                        </div>
-                        
-                        <div class="border-top pt-3 mt-3">
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <strong>Payment Status:</strong>
-                                </div>
-                                <div class="col-md-4 text-end">
-                                    {% if order.is_paid %}
-                                        <span class="badge bg-success fs-6">PAID</span>
-                                    {% else %}
-                                        <span class="badge bg-warning fs-6">PENDING</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Action Buttons -->
-                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-                    <a href="{% url 'order_list' %}" class="btn btn-primary me-md-2">
-                        <i class="fas fa-list"></i> View All Orders
-                    </a>
-                    <a href="{% url 'create_test_order' %}" class="btn btn-success">
-                        <i class="fas fa-plus"></i> Create New Order
-                    </a>
-                </div>
-                
-                <!-- Additional Information -->
-                <div class="alert alert-info mt-4">
-                    <strong>Important:</strong> Please save this receipt for your records. If you have any questions about this transaction, please contact our support team with the order ID.
-                </div>
-            </div>
+<div class="success-container">
+    <!-- Floating Background Elements -->
+    <div class="floating-elements">
+        <i class="fas fa-star floating-element" style="top: 10%; left: 10%; animation-delay: 0s;"></i>
+        <i class="fas fa-heart floating-element" style="top: 20%; right: 10%; animation-delay: 2s;"></i>
+        <i class="fas fa-gem floating-element" style="bottom: 20%; left: 15%; animation-delay: 4s;"></i>
+        <i class="fas fa-crown floating-element" style="bottom: 10%; right: 20%; animation-delay: 1s;"></i>
+    </div>
+
+    <!-- Success Message -->
+    <div class="success-card" data-aos="zoom-in">
+        <div class="success-icon">
+            <i class="fas fa-check"></i>
         </div>
         
-        {% if order.payment_logs.all %}
-        <!-- Payment Logs (for debugging/admin purposes) -->
-        <div class="card mt-4">
-            <div class="card-header">
-                <h6 class="mb-0">Payment Logs</h6>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Method</th>
-                                <th>Status</th>
-                                <th>Amount</th>
-                                <th>Transaction ID</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for log in order.payment_logs.all %}
-                            <tr>
-                                <td><small>{{ log.created_at|date:"M d, Y H:i" }}</small></td>
-                                <td><span class="badge bg-secondary">{{ log.payment_method }}</span></td>
-                                <td>
-                                    {% if log.status == 'Success' %}
-                                        <span class="badge bg-success">{{ log.status }}</span>
-                                    {% else %}
-                                        <span class="badge bg-danger">{{ log.status }}</span>
-                                    {% endif %}
-                                </td>
-                                <td>Rs. {{ log.amount }}</td>
-                                <td><small>{{ log.transaction_id }}</small></td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+        <h1 class="text-white mb-3">Payment Successful!</h1>
+        <p class="text-white-50 fs-5 mb-4">
+            Thank you for your payment. Your order has been processed successfully.
+        </p>
+        
+        <div class="status-badge">
+            <i class="fas fa-shield-check me-2"></i>
+            TRANSACTION COMPLETED
+        </div>
+    </div>
+
+    <!-- Order Receipt -->
+    <div class="receipt-card" data-aos="fade-up" data-aos-delay="200">
+        <h3 class="text-white mb-4 text-center">
+            <i class="fas fa-receipt me-2"></i>
+            Order Receipt
+        </h3>
+        
+        <div class="receipt-item">
+            <span class="receipt-label">Order ID</span>
+            <span class="receipt-value">{{ order.order_id }}</span>
+        </div>
+        
+        <div class="receipt-item">
+            <span class="receipt-label">Customer Name</span>
+            <span class="receipt-value">{{ order.name }}</span>
+        </div>
+        
+        <div class="receipt-item">
+            <span class="receipt-label">Order Date</span>
+            <span class="receipt-value">{{ order.created_at|date:"F d, Y g:i A" }}</span>
+        </div>
+        
+        <div class="receipt-item">
+            <span class="receipt-label">Amount Paid</span>
+            <span class="receipt-value text-warning">Rs. {{ order.paid_amount|default:order.total_price }}</span>
+        </div>
+        
+        <div class="receipt-item">
+            <span class="receipt-label">Payment Method</span>
+            <span class="receipt-value">
+                {% if order.payment_method == 'khalti' %}
+                    <i class="fas fa-mobile-alt me-2"></i>Khalti
+                {% elif order.payment_method == 'esewa' %}
+                    <i class="fas fa-wallet me-2"></i>eSewa
+                {% else %}
+                    <i class="fas fa-credit-card me-2"></i>{{ order.payment_method|default:"Not specified" }}
+                {% endif %}
+            </span>
+        </div>
+        
+        <div class="receipt-item">
+            <span class="receipt-label">Transaction ID</span>
+            <span class="receipt-value">{{ order.transaction_id|default:"N/A" }}</span>
+        </div>
+        
+        <div class="receipt-item">
+            <span class="receipt-label">Payment Status</span>
+            <span class="receipt-value">
+                {% if order.is_paid %}
+                    <span class="badge bg-success fs-6">
+                        <i class="fas fa-check-circle me-1"></i>PAID
+                    </span>
+                {% else %}
+                    <span class="badge bg-warning fs-6">
+                        <i class="fas fa-clock me-1"></i>PENDING
+                    </span>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons" data-aos="fade-up" data-aos-delay="400">
+        <a href="{% url 'order_list' %}" class="btn-action">
+            <i class="fas fa-list"></i>
+            View All Orders
+        </a>
+        <a href="{% url 'create_test_order' %}" class="btn-action secondary">
+            <i class="fas fa-plus"></i>
+            Create New Order
+        </a>
+    </div>
+
+    <!-- Important Information -->
+    <div class="info-alert" data-aos="fade-up" data-aos-delay="600">
+        <div class="d-flex align-items-start">
+            <i class="fas fa-info-circle me-3 mt-1 text-info"></i>
+            <div>
+                <strong>Important:</strong> Please save this receipt for your records. If you have any questions about this transaction, please contact our support team with the order ID.
             </div>
         </div>
-        {% endif %}
     </div>
+
+    {% if order.payment_logs.all %}
+    <!-- Payment Logs -->
+    <div class="payment-logs-card" data-aos="fade-up" data-aos-delay="800">
+        <h5 class="text-white mb-3">
+            <i class="fas fa-history me-2"></i>
+            Payment History
+        </h5>
+        <div class="table-responsive">
+            <table class="table logs-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Method</th>
+                        <th>Status</th>
+                        <th>Amount</th>
+                        <th>Transaction ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in order.payment_logs.all %}
+                    <tr>
+                        <td>{{ log.created_at|date:"M d, Y H:i" }}</td>
+                        <td>
+                            <span class="badge bg-secondary">
+                                <i class="fas fa-{{ log.payment_method == 'khalti' and 'mobile-alt' or 'wallet' }} me-1"></i>
+                                {{ log.payment_method|title }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if log.status == 'Success' %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check me-1"></i>{{ log.status }}
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-times me-1"></i>{{ log.status }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>Rs. {{ log.amount }}</td>
+                        <td><small>{{ log.transaction_id }}</small></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
 </div>
+
+<script>
+// Confetti animation on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Simple confetti effect
+    createConfetti();
+    
+    // Auto-hide confetti after 3 seconds
+    setTimeout(() => {
+        const confetti = document.querySelector('.confetti');
+        if (confetti) {
+            confetti.style.opacity = '0';
+            setTimeout(() => confetti.remove(), 1000);
+        }
+    }, 3000);
+});
+
+function createConfetti() {
+    const confettiContainer = document.createElement('div');
+    confettiContainer.className = 'confetti';
+    document.body.appendChild(confettiContainer);
+    
+    const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3', '#54a0ff'];
+    
+    for (let i = 0; i < 50; i++) {
+        const confettiPiece = document.createElement('div');
+        confettiPiece.style.cssText = `
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: ${colors[Math.floor(Math.random() * colors.length)]};
+            top: -10px;
+            left: ${Math.random() * 100}%;
+            opacity: 0.8;
+            border-radius: 50%;
+            animation: confettiFall ${2 + Math.random() * 3}s ease-out forwards;
+        `;
+        confettiContainer.appendChild(confettiPiece);
+    }
+}
+
+// Add confetti animation styles
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes confettiFall {
+        to {
+            transform: translateY(100vh) rotate(720deg);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+</script>
 {% endblock content %}
