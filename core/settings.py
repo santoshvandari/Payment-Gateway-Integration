@@ -128,9 +128,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Payment Gateway Settings
 # eSewa Configuration
 ESEWA_SCD = os.getenv('ESEWA_SCD', 'EPAYTEST')  # Service Code for testing
-ESEWA_SUCCESS_URL = os.getenv('ESEWA_SUCCESS_URL')
-ESEWA_FAILURE_URL = os.getenv('ESEWA_FAILURE_URL' )
-ESEWA_PAYMENT_URL = os.getenv('ESEWA_PAYMENT_URL')  # Test URL
+ESEWA_SUCCESS_URL = os.getenv('ESEWA_SUCCESS_URL', 'http://127.0.0.1:8000/payment/esewa-success/')
+ESEWA_FAILURE_URL = os.getenv('ESEWA_FAILURE_URL', 'http://127.0.0.1:8000/payment/esewa-failure/')
+ESEWA_PAYMENT_URL = os.getenv('ESEWA_PAYMENT_URL', 'https://esewa.com.np/epay/main')  # Test URL
 
 # Khalti Configuration
 KHALTI_PUBLIC_KEY = os.getenv('KHALTI_PUBLIC_KEY')  # Test public key

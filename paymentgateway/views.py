@@ -28,7 +28,7 @@ def order_checkout(request, order_id):
             # Initialize eSewa payment
             esewa = EsewaPaymentGateway()
             payment_data = esewa.generate_payment_data(order)
-            
+            print(payment_data)
             context = {
                 'order': order,
                 'payment_data': payment_data,
