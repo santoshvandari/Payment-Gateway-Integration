@@ -1,0 +1,734 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Orders Dashboard - Payment Gateway{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 0;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .stats-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 2rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .stats-card.total-orders {
+        --gradient-start: #667eea;
+        --gradient-end: #764ba2;
+    }
+
+    .stats-card.paid-orders {
+        --gradient-start: #10b981;
+        --gradient-end: #059669;
+    }
+
+    .stats-card.pending-orders {
+        --gradient-start: #f59e0b;
+        --gradient-end: #d97706;
+    }
+
+    .stats-card.revenue {
+        --gradient-start: #8b5cf6;
+        --gradient-end: #7c3aed;
+    }
+
+    .stats-content {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .stats-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .stats-info h3 {
+        color: white;
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        line-height: 1;
+    }
+
+    .stats-info p {
+        color: rgba(255, 255, 255, 0.8);
+        margin: 0.5rem 0 0;
+        font-weight: 500;
+    }
+
+    .orders-table-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        overflow: hidden;
+    }
+
+    .table-header {
+        background: rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 1.5rem 2rem;
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .table-title {
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .table-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-glass {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 10px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-glass:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .orders-table {
+        color: white;
+        background: transparent;
+    }
+
+    .orders-table thead th {
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 600;
+        padding: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .orders-table tbody td {
+        border-color: rgba(255, 255, 255, 0.1);
+        padding: 1rem;
+        vertical-align: middle;
+    }
+
+    .orders-table tbody tr {
+        transition: all 0.3s ease;
+    }
+
+    .orders-table tbody tr:hover {
+        background: rgba(255, 255, 255, 0.05);
+        transform: scale(1.01);
+    }
+
+    .order-id-badge {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .customer-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        margin-right: 1rem;
+    }
+
+    .customer-info {
+        display: flex;
+        align-items: center;
+    }
+
+    .customer-name {
+        color: white;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .customer-label {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.8rem;
+        margin: 0;
+    }
+
+    .amount-display {
+        color: #10b981;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .status-badge.paid {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+    }
+
+    .status-badge.pending {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+    }
+
+    .payment-method-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .payment-method-badge.khalti {
+        background: linear-gradient(135deg, #5D2E5D, #7c3aed);
+        color: white;
+    }
+
+    .payment-method-badge.esewa {
+        background: linear-gradient(135deg, #60BB46, #22c55e);
+        color: white;
+    }
+
+    .date-display {
+        color: white;
+        font-weight: 600;
+    }
+
+    .time-display {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.8rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-action {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        color: white;
+        font-size: 0.9rem;
+    }
+
+    .btn-action.pay {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+
+    .btn-action.receipt {
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    .btn-action.copy {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        color: rgba(255, 255, 255, 0.3);
+        margin-bottom: 2rem;
+    }
+
+    .empty-state h4 {
+        color: white;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state p {
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 2rem;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .btn-create-order {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border: none;
+        border-radius: 15px;
+        padding: 1rem 2rem;
+        color: white;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-create-order:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .table-footer {
+        background: rgba(255, 255, 255, 0.05);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 1.5rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    @media (max-width: 768px) {
+        .table-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .orders-table {
+            font-size: 0.9rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Page Header -->
+    <div class="mb-5" data-aos="fade-down">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1 class="display-5 fw-bold text-white mb-2">
+                    <i class="fas fa-tachometer-alt me-3"></i>Orders Dashboard
+                </h1>
+                <p class="text-white-50 fs-5 mb-0">Manage and track all your payment orders</p>
+            </div>
+            <div>
+                <a href="{% url 'create_test_order' %}" class="btn-create-order" data-aos="fade-left" data-aos-delay="200">
+                    <i class="fas fa-plus"></i>
+                    Create New Order
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    {% if orders %}
+    <div class="stats-grid" data-aos="fade-up" data-aos-delay="100">
+        <div class="stats-card total-orders">
+            <div class="stats-content">
+                <div class="stats-icon">
+                    <i class="fas fa-list-alt"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>{{ orders|length }}</h3>
+                    <p>Total Orders</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-card paid-orders">
+            <div class="stats-content">
+                <div class="stats-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stats-info">
+                    <h3 id="paid-count">0</h3>
+                    <p>Paid Orders</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-card pending-orders">
+            <div class="stats-content">
+                <div class="stats-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stats-info">
+                    <h3 id="pending-count">0</h3>
+                    <p>Pending Orders</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-card revenue">
+            <div class="stats-content">
+                <div class="stats-icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div class="stats-info">
+                    <h3 id="total-revenue">Rs. 0</h3>
+                    <p>Total Revenue</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Orders Table -->
+    <div class="orders-table-card" data-aos="fade-up" data-aos-delay="300">
+        <div class="table-header">
+            <h4 class="table-title">
+                <i class="fas fa-table"></i>
+                Recent Orders
+            </h4>
+            <div class="table-actions">
+                <button class="btn-glass" onclick="refreshOrders()">
+                    <i class="fas fa-sync-alt me-1"></i>Refresh
+                </button>
+                <div class="dropdown">
+                    <button class="btn-glass dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-filter me-1"></i>Filter
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="filterOrders('all')">All Orders</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="filterOrders('paid')">Paid Only</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="filterOrders('pending')">Pending Only</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        {% if orders %}
+        <div class="table-responsive">
+            <table class="table orders-table mb-0" id="ordersTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Payment Method</th>
+                        <th>Created</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr data-order-status="{{ order.is_paid|yesno:'paid,pending' }}">
+                        <td>
+                            <span class="badge bg-light text-dark">{{ forloop.counter }}</span>
+                        </td>
+                        <td>
+                            <span class="order-id-badge">{{ order.order_id }}</span>
+                        </td>
+                        <td>
+                            <div class="customer-info">
+                                <div class="customer-avatar">
+                                    {{ order.name|first|upper }}
+                                </div>
+                                <div>
+                                    <p class="customer-name">{{ order.name }}</p>
+                                    <p class="customer-label">Customer</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="amount-display">Rs. {{ order.total_price|floatformat:0 }}</span>
+                        </td>
+                        <td>
+                            {% if order.is_paid %}
+                                <span class="status-badge paid">
+                                    <i class="fas fa-check-circle"></i>Paid
+                                </span>
+                            {% else %}
+                                <span class="status-badge pending">
+                                    <i class="fas fa-clock"></i>Pending
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if order.payment_method %}
+                                {% if order.payment_method == 'khalti' %}
+                                    <span class="payment-method-badge khalti">
+                                        <i class="fas fa-mobile-alt"></i>Khalti
+                                    </span>
+                                {% elif order.payment_method == 'esewa' %}
+                                    <span class="payment-method-badge esewa">
+                                        <i class="fas fa-wallet"></i>eSewa
+                                    </span>
+                                {% else %}
+                                    <span class="payment-method-badge">{{ order.payment_method }}</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-white-50">Not specified</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="date-display">{{ order.created_at|date:"M d, Y" }}</div>
+                            <div class="time-display">{{ order.created_at|date:"g:i A" }}</div>
+                        </td>
+                        <td class="text-center">
+                            <div class="action-buttons">
+                                {% if not order.is_paid %}
+                                    <a href="{% url 'order_checkout' order.id %}" 
+                                       class="btn-action pay" 
+                                       data-bs-toggle="tooltip" 
+                                       title="Process Payment">
+                                        <i class="fas fa-credit-card"></i>
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'order_success' order.id %}" 
+                                       class="btn-action receipt" 
+                                       data-bs-toggle="tooltip" 
+                                       title="View Receipt">
+                                        <i class="fas fa-receipt"></i>
+                                    </a>
+                                {% endif %}
+                                <button class="btn-action copy" 
+                                        onclick="copyOrderId('{{ order.order_id }}')" 
+                                        data-bs-toggle="tooltip" 
+                                        title="Copy Order ID">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="table-footer">
+            <span>Showing {{ orders|length }} order{{ orders|length|pluralize }}</span>
+            <div class="d-flex gap-2">
+                <button class="btn-glass" onclick="exportOrders()">
+                    <i class="fas fa-download me-1"></i>Export
+                </button>
+            </div>
+        </div>
+        {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <h4>No Orders Found</h4>
+            <p>
+                You haven't created any orders yet. Start by creating a test order to see how the payment gateway integration works.
+            </p>
+            <a href="{% url 'create_test_order' %}" class="btn-create-order">
+                <i class="fas fa-plus"></i>
+                Create Your First Order
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Copy Order ID to clipboard
+function copyOrderId(orderId) {
+    navigator.clipboard.writeText(orderId).then(() => {
+        showSuccess('Order ID copied to clipboard!');
+    }).catch(() => {
+        showError('Failed to copy Order ID');
+    });
+}
+
+// Filter orders
+function filterOrders(filter) {
+    const table = document.getElementById('ordersTable');
+    const rows = table.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const status = row.dataset.orderStatus;
+        if (filter === 'all' || status === filter) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+// Refresh orders
+function refreshOrders() {
+    const button = event.target.closest('button');
+    const icon = button.querySelector('i');
+    
+    icon.classList.add('fa-spin');
+    
+    setTimeout(() => {
+        location.reload();
+    }, 500);
+}
+
+// Export orders
+function exportOrders() {
+    showSuccess('Export functionality coming soon!', 'info');
+}
+
+// Initialize tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Add loading animation to buttons
+    document.querySelectorAll('.btn-action').forEach(button => {
+        button.addEventListener('click', function() {
+            if (!this.classList.contains('copy')) {
+                const icon = this.querySelector('i');
+                icon.classList.add('fa-spin');
+            }
+        });
+    });
+    
+    // Calculate statistics
+    calculateStatistics();
+});
+
+// Calculate statistics from the table data
+function calculateStatistics() {
+    const table = document.getElementById('ordersTable');
+    if (!table) return;
+    
+    const rows = table.querySelectorAll('tbody tr');
+    let paidCount = 0;
+    let pendingCount = 0;
+    let totalRevenue = 0;
+    
+    rows.forEach(row => {
+        const status = row.dataset.orderStatus;
+        const amountText = row.querySelector('.amount-display').textContent;
+        const amount = parseFloat(amountText.replace('Rs. ', '').replace(',', ''));
+        
+        if (status === 'paid') {
+            paidCount++;
+            totalRevenue += amount;
+        } else if (status === 'pending') {
+            pendingCount++;
+        }
+    });
+    
+    // Update the statistics display with animation
+    animateCounter('paid-count', paidCount);
+    animateCounter('pending-count', pendingCount);
+    animateRevenue('total-revenue', totalRevenue);
+}
+
+// Animate counter numbers
+function animateCounter(elementId, targetValue) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    let currentValue = 0;
+    const increment = targetValue / 20;
+    const timer = setInterval(() => {
+        currentValue += increment;
+        if (currentValue >= targetValue) {
+            currentValue = targetValue;
+            clearInterval(timer);
+        }
+        element.textContent = Math.floor(currentValue);
+    }, 50);
+}
+
+// Animate revenue with currency formatting
+function animateRevenue(elementId, targetValue) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    let currentValue = 0;
+    const increment = targetValue / 20;
+    const timer = setInterval(() => {
+        currentValue += increment;
+        if (currentValue >= targetValue) {
+            currentValue = targetValue;
+            clearInterval(timer);
+        }
+        element.textContent = 'Rs. ' + Math.floor(currentValue).toLocaleString();
+    }, 50);
+}
+</script>
+{% endblock content %}

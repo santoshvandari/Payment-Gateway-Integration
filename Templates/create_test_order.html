@@ -1,0 +1,352 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Test Order - Payment Gateway{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/payment-gateway.css' %}" rel="stylesheet">
+<style>
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+    }
+    .preview-card {
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(99, 102, 241, 0.1));
+        border: 2px dashed var(--primary-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-10">
+        <!-- Page Header -->
+        <div class="text-center mb-5" data-aos="fade-down">
+            <h1 class="display-6 fw-bold text-dark">
+                <i class="fas fa-plus-circle me-3 text-success"></i>Create Test Order
+            </h1>
+            <p class="lead text-muted">Generate a sample order to test payment gateway integration</p>
+        </div>
+
+        <div class="row">
+            <!-- Order Form -->
+            <div class="col-lg-6 mb-4">
+                <div class="card" data-aos="fade-right">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-edit me-2"></i>Order Details
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" id="orderForm" class="needs-validation" novalidate>
+                            {% csrf_token %}
+                            
+                            <div class="mb-4">
+                                <label for="name" class="form-label fw-semibold">
+                                    <i class="fas fa-user me-2 text-primary"></i>Customer Name
+                                </label>
+                                <input type="text" 
+                                       class="form-control form-control-lg" 
+                                       id="name" 
+                                       name="name" 
+                                       placeholder="Enter customer name" 
+                                       value="John Doe" 
+                                       required
+                                       oninput="updatePreview()">
+                                <div class="invalid-feedback">
+                                    Please provide a valid customer name.
+                                </div>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>This will be used as the customer name in the order
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="amount" class="form-label fw-semibold">
+                                    <i class="fas fa-money-bill-wave me-2 text-success"></i>Amount (NPR)
+                                </label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text">Rs.</span>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="amount" 
+                                           name="amount" 
+                                           placeholder="0.00" 
+                                           value="1000" 
+                                           min="10" 
+                                           max="100000" 
+                                           step="1"
+                                           required
+                                           oninput="updatePreview()">
+                                </div>
+                                <div class="invalid-feedback">
+                                    Amount must be between Rs. 10 and Rs. 100,000
+                                </div>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>Minimum: Rs. 10, Maximum: Rs. 100,000
+                                </div>
+                            </div>
+
+                            <!-- Quick Amount Buttons -->
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Quick Amount Selection</label>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="setAmount(100)">Rs. 100</button>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="setAmount(500)">Rs. 500</button>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="setAmount(1000)">Rs. 1,000</button>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="setAmount(2500)">Rs. 2,500</button>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="setAmount(5000)">Rs. 5,000</button>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info" data-aos="fade-up" data-aos-delay="200">
+                                <div class="d-flex">
+                                    <i class="fas fa-lightbulb fa-lg me-3 mt-1"></i>
+                                    <div>
+                                        <h6 class="alert-heading fw-bold">Test Order Information</h6>
+                                        <ul class="mb-0 small">
+                                            <li>This creates a test order for demonstration purposes</li>
+                                            <li>You can test both Khalti and eSewa payment gateways</li>
+                                            <li>Orders can be tracked in the dashboard</li>
+                                            <li>Test transactions won't affect real accounts</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success btn-lg" id="submitBtn">
+                                    <i class="fas fa-plus me-2"></i>Create Order
+                                </button>
+                                <a href="{% url 'order_list' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Orders
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Preview -->
+            <div class="col-lg-6 mb-4">
+                <div class="card preview-card" data-aos="fade-left" data-aos-delay="100">
+                    <div class="card-header bg-transparent border-0">
+                        <h5 class="fw-bold mb-0">
+                            <i class="fas fa-eye me-2 text-primary"></i>Order Preview
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-receipt fa-3x text-primary mb-3"></i>
+                            <h6 class="text-muted">Live Preview</h6>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-5">
+                                <strong>Customer:</strong>
+                            </div>
+                            <div class="col-7">
+                                <span id="previewName" class="text-primary">John Doe</span>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-5">
+                                <strong>Amount:</strong>
+                            </div>
+                            <div class="col-7">
+                                <span id="previewAmount" class="text-success fw-bold">Rs. 1,000</span>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-5">
+                                <strong>Order ID:</strong>
+                            </div>
+                            <div class="col-7">
+                                <span class="text-muted font-monospace">Auto-generated</span>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-5">
+                                <strong>Date:</strong>
+                            </div>
+                            <div class="col-7">
+                                <span class="text-muted" id="currentDate"></span>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="text-center">
+                            <h6 class="fw-bold mb-3">Available Payment Methods</h6>
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center py-3">
+                                            <div class="payment-icon khalti mb-2">
+                                                <i class="fas fa-mobile-alt"></i>
+                                            </div>
+                                            <small class="fw-semibold">Khalti</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center py-3">
+                                            <div class="payment-icon esewa mb-2">
+                                                <i class="fas fa-wallet"></i>
+                                            </div>
+                                            <small class="fw-semibold">eSewa</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Test Credentials -->
+                <div class="card mt-4" data-aos="fade-left" data-aos-delay="200">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="mb-0">
+                            <i class="fas fa-key me-2"></i>Test Credentials
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="accordion" id="credentialsAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#esewaCredentials">
+                                        <i class="payment-icon esewa me-2" style="width: 20px; height: 20px; font-size: 0.8rem;">
+                                            <i class="fas fa-wallet"></i>
+                                        </i>
+                                        eSewa Test Setup
+                                    </button>
+                                </h2>
+                                <div id="esewaCredentials" class="accordion-collapse collapse" data-bs-parent="#credentialsAccordion">
+                                    <div class="accordion-body">
+                                        <ul class="list-unstyled mb-0 small">
+                                            <li><strong>Service Code:</strong> <code>EPAYTEST</code></li>
+                                            <li><strong>Environment:</strong> UAT</li>
+                                            <li><strong>URL:</strong> <code>uat.esewa.com.np</code></li>
+                                            <li><strong>Note:</strong> Use any valid amount for testing</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#khaltiCredentials">
+                                        <i class="payment-icon khalti me-2" style="width: 20px; height: 20px; font-size: 0.8rem;">
+                                            <i class="fas fa-mobile-alt"></i>
+                                        </i>
+                                        Khalti Test Setup
+                                    </button>
+                                </h2>
+                                <div id="khaltiCredentials" class="accordion-collapse collapse" data-bs-parent="#credentialsAccordion">
+                                    <div class="accordion-body">
+                                        <ul class="list-unstyled mb-0 small">
+                                            <li><strong>Public Key:</strong> <code class="text-break">test_public_key_dc74e...</code></li>
+                                            <li><strong>Secret Key:</strong> <code class="text-break">test_secret_key_f59e...</code></li>
+                                            <li><strong>Environment:</strong> Sandbox</li>
+                                            <li><strong>Note:</strong> Use test account for payments</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Update current date
+document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+});
+
+// Update preview in real-time
+function updatePreview() {
+    const name = document.getElementById('name').value || 'Customer Name';
+    const amount = document.getElementById('amount').value || '0';
+    
+    document.getElementById('previewName').textContent = name;
+    document.getElementById('previewAmount').textContent = `Rs. ${parseInt(amount).toLocaleString()}`;
+}
+
+// Set quick amount
+function setAmount(amount) {
+    document.getElementById('amount').value = amount;
+    updatePreview();
+    
+    // Add visual feedback
+    event.target.classList.add('btn-primary');
+    event.target.classList.remove('btn-outline-primary');
+    
+    // Reset other buttons
+    const buttons = document.querySelectorAll('.btn-outline-primary');
+    buttons.forEach(btn => {
+        if (btn !== event.target) {
+            btn.classList.add('btn-outline-primary');
+            btn.classList.remove('btn-primary');
+        }
+    });
+    
+    setTimeout(() => {
+        event.target.classList.remove('btn-primary');
+        event.target.classList.add('btn-outline-primary');
+    }, 1000);
+}
+
+// Form validation
+document.getElementById('orderForm').addEventListener('submit', function(event) {
+    const form = this;
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (!form.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+    } else {
+        // Show loading state
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating Order...';
+        submitBtn.disabled = true;
+        
+        // Re-enable if form fails to submit for any reason
+        setTimeout(() => {
+            if (submitBtn.disabled) {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }, 5000);
+    }
+    
+    form.classList.add('was-validated');
+});
+
+// Real-time amount validation
+document.getElementById('amount').addEventListener('input', function() {
+    const amount = parseFloat(this.value);
+    const isValid = amount >= 10 && amount <= 100000;
+    
+    if (isValid) {
+        this.classList.remove('is-invalid');
+        this.classList.add('is-valid');
+    } else {
+        this.classList.remove('is-valid');
+        this.classList.add('is-invalid');
+    }
+});
+
+// Initialize
+updatePreview();
+</script>
+{% endblock content %}
